@@ -4,6 +4,7 @@ import './App.css';
 
 class ShoppingCart extends Component {
   render() {
+    
     return (
       <div>
         <h1>Shopping Cart Example</h1>
@@ -11,6 +12,9 @@ class ShoppingCart extends Component {
         <ProductList />
         <Cart
           totalcost={0}
+          cartItems={[
+            {"id": 1, "description": "iPad 4 Mini", "price": 500.01}
+          ]}
         />
       </div>
     );
@@ -87,18 +91,12 @@ class AddToCart extends Component {
 
 class Cart extends Component {
   render() {
-    let addMessage;
-    if (this.props.totalcost === 0) {
-      addMessage = (<em>Please add some items to cart.</em>)
-    } else {
-
-    }
     return (
       <div>
         <h2>Your Cart</h2>
-          <ProductDescription />
-
-          {addMessage}
+          <CartList 
+            cartItems={this.props.cartItems}
+          />
           <p>
             Total:<span>{this.props.totalcost}</span>
           </p>
@@ -107,6 +105,30 @@ class Cart extends Component {
           />
       </div>
     );
+  }
+}
+
+class CartList extends Component {
+  render() {
+    if (this.props.totalcost === 0) {
+      return (
+        <em>Please add some items to cart.</em>
+      );
+    } else {
+      const components = this.props.cartItems.map((product) => (
+        <ProductDescription
+          key={'product-' + product.id}
+          id={product.id}
+          description={product.description}
+          price={product.price}
+        />
+      ));
+      return (
+        <div>
+          {components}
+        </div>
+      );
+    }
   }
 }
 
