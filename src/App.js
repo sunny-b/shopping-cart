@@ -17,9 +17,9 @@ class ShoppingCart extends Component {
     const product = this.state.products.filter(product => product.id === productId)[0];
 
     this.setState({
-      products: decreaseInventory(productId),
+      products: this.decreaseInventory(productId),
       totalCost: this.state.totalCost + product.price,
-      cartItems: addItemToCart(product),
+      cartItems: this.addItemToCart(product),
     });
   }
 
