@@ -3,18 +3,62 @@ import logo from './logo.svg';
 import './App.css';
 
 class ShoppingCart extends Component {
+  state = {
+    products: [
+      {"id": 1, "description": "iPad 4 Mini", "price": 500.01, "inventory": 2},
+      {"id": 2, "description": "H&M T-Shirt White", "price": 10.99, "inventory": 10},
+      {"id": 3, "description": "Charli XCX - Sucker CD", "price": 19.99, "inventory": 5}
+    ],
+    totalCost: 0,
+    cartItems: [],
+  };
+
+  handleAddToCart(productId) {
+    const product = this.state.products.filter(product => product.id === productId)[0];
+
+    this.setState({
+      products: decreaseInventory(productId),
+      totalCost: this.state.totalCost + product.price,
+      cartItems: addItemToCart(product),
+    });
+  }
+
+  decreaseInventory(productId) {
+    return this.state.products.map(product => {
+      if (product.id === productId) {
+        return Object.assign({}, product, {
+          inventory: product.inventory - 1,
+        });
+      } else {
+        return product;
+      }
+    });
+  }
+
+  addItemToCart(product) {
+    const filteredItems = this.state.cartItems.filter(cartItem => {
+      return cartItem.id === product.id
+    });
+
+    if (filteredItems.length > 0) {
+      return this.state.cartItems;
+    } else {
+      return this.state.cartItems.concat(product);
+    }
+  }
+
   render() {
-    
     return (
       <div>
         <h1>Shopping Cart Example</h1>
         <hr />
-        <ProductList />
+        <ProductList
+          products={this.state.products}
+          onAddToCart={this.handleAddToCart}
+        />
         <Cart
-          totalcost={0}
-          cartItems={[
-            {"id": 1, "description": "iPad 4 Mini", "price": 500.01}
-          ]}
+          totalCost={this.state.totalCost}
+          cartItems={this.state.cartItems}
         />
       </div>
     );
@@ -23,12 +67,23 @@ class ShoppingCart extends Component {
 
 class ProductList extends Component {
   render() {
+    const productComponents = this.props.products.map(product => {
+      return (
+        <Product
+          key={'product-' + product.id}
+          id={product.id}
+          description={product.description}
+          price={product.price}
+          inventory={product.inventory}
+          onAddToCart={this.props.onAddToCart}
+        />
+      );
+    });
     return (
       <div>
         <h2>Products</h2>
         <ul>
-            <Product description='iPad Mini' price={500.01} inventory={0}/>
-            <Product description='T-Shirt' price={10.01} inventory={5}/>
+            {productComponents}
         </ul>
         <hr />
       </div>
@@ -46,6 +101,8 @@ class Product extends Component {
           inventory={this.props.inventory}
         />
         <AddToCart
+          onAddToCart={this.props.onAddToCart}
+          id={this.props.id}
           disabled={this.props.inventory > 0 ? false : true }
         />
       </li>
@@ -58,16 +115,16 @@ class ProductDescription extends Component {
     if (this.props.inventory) {
       return (
         <p>
-          <span>{this.props.description}</span> -
-          <span>{this.props.price}</span> x
-          <span>{this.props.inventory}</span>
+          <span>{this.props.description}</span>
+          <span> - ${this.props.price}</span>
+          <span> x {this.props.inventory}</span>
         </p>
       )
     } else {
       return (
         <p>
-          <span>{this.props.description}</span> -
-          <span>{this.props.price}</span>
+          <span>{this.props.description}</span>
+          <span> - ${this.props.price}</span>
         </p>
       )
     }
@@ -75,6 +132,10 @@ class ProductDescription extends Component {
 }
 
 class AddToCart extends Component {
+  handleAddToCart() {
+    this.props.onAddToCart(this.props.id);
+  }
+
   render() {
     if (this.props.disabled) {
       return (
@@ -83,7 +144,11 @@ class AddToCart extends Component {
     }
     else {
       return (
-        <button>Add to cart</button>
+        <button
+          onClick={this.handleAddToCart}
+        >
+          Add to cart
+        </button>
       )
     }
   }
@@ -94,14 +159,14 @@ class Cart extends Component {
     return (
       <div>
         <h2>Your Cart</h2>
-          <CartList 
+          <CartList
             cartItems={this.props.cartItems}
           />
           <p>
-            Total:<span>{this.props.totalcost}</span>
+            Total: $<span>{this.props.totalCost}</span>
           </p>
           <Checkout
-            disabled={this.props.totalcost === 0 ? true : false}
+            disabled={this.props.totalCost === 0 ? true : false}
           />
       </div>
     );
@@ -110,7 +175,7 @@ class Cart extends Component {
 
 class CartList extends Component {
   render() {
-    if (this.props.totalcost === 0) {
+    if (this.props.cartItems.length === 0) {
       return (
         <em>Please add some items to cart.</em>
       );
