@@ -13,7 +13,7 @@ class ShoppingCart extends Component {
     cartItems: [],
   };
 
-  handleAddToCart(productId) {
+  handleAddToCart = (productId) => {
     const product = this.state.products.filter(product => product.id === productId)[0];
 
     this.setState({
@@ -23,7 +23,7 @@ class ShoppingCart extends Component {
     });
   }
 
-  decreaseInventory(productId) {
+  decreaseInventory = (productId) => {
     return this.state.products.map(product => {
       if (product.id === productId) {
         return Object.assign({}, product, {
@@ -35,7 +35,7 @@ class ShoppingCart extends Component {
     });
   }
 
-  addItemToCart(product) {
+  addItemToCart = (product) => {
     const filteredItems = this.state.cartItems.filter(cartItem => {
       return cartItem.id === product.id
     });
@@ -45,6 +45,18 @@ class ShoppingCart extends Component {
     } else {
       return this.state.cartItems.concat(product);
     }
+  }
+
+  handleCheckout = () => {
+    this.emptyCart();
+  }
+
+  emptyCart = () => {
+    this.setState({
+      products: this.state.products,
+      totalCost: 0,
+      cartItems: []
+    })
   }
 
   render() {
@@ -59,6 +71,7 @@ class ShoppingCart extends Component {
         <Cart
           totalCost={this.state.totalCost}
           cartItems={this.state.cartItems}
+          onCheckout={this.handleCheckout}
         />
       </div>
     );
@@ -132,7 +145,7 @@ class ProductDescription extends Component {
 }
 
 class AddToCart extends Component {
-  handleAddToCart() {
+  handleAddToCart = () => {
     this.props.onAddToCart(this.props.id);
   }
 
@@ -167,6 +180,7 @@ class Cart extends Component {
           </p>
           <Checkout
             disabled={this.props.totalCost === 0 ? true : false}
+            onCheckout={this.props.onCheckout}
           />
       </div>
     );
@@ -198,9 +212,16 @@ class CartList extends Component {
 }
 
 class Checkout extends Component {
+  handleCheckout = () => {
+    this.props.onCheckout()
+  }
+
   render() {
     return (
-      <button disabled={this.props.disabled}>Checkout</button>
+      <button
+        disabled={this.props.disabled}
+        onClick={this.handleCheckout}
+      >Checkout</button>
     )
   }
 }
