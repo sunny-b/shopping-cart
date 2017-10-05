@@ -16,10 +16,12 @@ class ShoppingCart extends Component {
   handleAddToCart = (productId) => {
     const product = this.state.products.filter(product => product.id === productId)[0];
 
-    this.setState({
-      products: this.decreaseInventory(productId),
-      totalCost: this.state.totalCost + product.price,
-      cartItems: this.addItemToCart(product),
+    this.setState(prevState => {
+      return {
+        products: this.decreaseInventory(productId),
+        totalCost: this.state.totalCost + product.price,
+        cartItems: this.addItemToCart(product),
+      }
     });
   }
 
@@ -52,10 +54,12 @@ class ShoppingCart extends Component {
   }
 
   emptyCart = () => {
-    this.setState({
-      products: this.state.products,
-      totalCost: 0,
-      cartItems: []
+    this.setState(prevState => {
+      return {
+        products: this.state.products,
+        totalCost: 0,
+        cartItems: [],
+      }
     })
   }
 
