@@ -19,7 +19,7 @@ class ShoppingCart extends Component {
     this.setState(prevState => {
       return {
         products: this.decreaseInventory(productId),
-        totalCost: this.state.totalCost + product.price,
+        totalCost: prevState.totalCost + product.price,
         cartItems: this.addItemToCart(product),
       }
     });
@@ -56,7 +56,7 @@ class ShoppingCart extends Component {
   emptyCart = () => {
     this.setState(prevState => {
       return {
-        products: this.state.products,
+        products: prevState.products,
         totalCost: 0,
         cartItems: [],
       }
