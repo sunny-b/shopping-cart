@@ -76,7 +76,7 @@ class ShoppingCart extends Component {
   handleEditProduct = (product) => {
     product.price = +product.price;
     product.inventory = +product.inventory;
-    
+
     const products = this.state.products.filter(item => item.id !== product.id).concat(product).sort((a, b) => a.id - b.id);
     this.setState({ products });
   }
@@ -395,5 +395,13 @@ class Checkout extends Component {
 
 export {
   ShoppingCart,
-  ProductList
+  ProductList,
+  AddNewItemForm,
+  AddToCart,
+  Product,
+  EditForm,
+  ProductDescription,
+  Cart,
+  CartList,
+  Checkout
 }
