@@ -11,6 +11,7 @@ class ShoppingCart extends Component {
     ],
     totalCost: 0,
     cartItems: [],
+    lastId: 3,
   };
 
   handleAddToCart = (productId) => {
@@ -23,6 +24,15 @@ class ShoppingCart extends Component {
         cartItems: this.addItemToCart(product),
       }
     });
+  }
+
+  handleNewProduct = (product) => {
+    product.price = +product.price;
+    product.inventory = +product.inventory;
+    product.id = this.state.lastId + 1;
+    const products = [...this.state.products, product];
+
+    this.setState({ products, lastId: product.id });
   }
 
   decreaseInventory = (productId) => {
@@ -63,20 +73,91 @@ class ShoppingCart extends Component {
     })
   }
 
+  handleEditProduct = (product) => {
+    product.price = +product.price;
+    product.inventory = +product.inventory;
+    
+    const products = this.state.products.filter(item => item.id !== product.id).concat(product).sort((a, b) => a.id - b.id);
+    this.setState({ products });
+  }
+
   render() {
     return (
       <div>
         <h1>Shopping Cart Example</h1>
+        <AddNewItemForm
+          onSubmit={this.handleNewProduct}
+        />
         <hr />
         <ProductList
           products={this.state.products}
           onAddToCart={this.handleAddToCart}
+          onSubmit={this.handleEditProduct}
         />
         <Cart
           totalCost={this.state.totalCost}
           cartItems={this.state.cartItems}
           onCheckout={this.handleCheckout}
         />
+      </div>
+    );
+  }
+}
+
+class AddNewItemForm extends Component {
+  state = {
+    description: '',
+    price: '',
+    inventory: ''
+  }
+
+  handleChange = (e) => {
+    let newState = {};
+    newState[e.target.name] = e.target.value;
+    this.setState(newState);
+  }
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+
+    this.props.onSubmit(this.state);
+
+    this.setState({
+      description: '',
+      price: '',
+      inventory: '',
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <h3>Add New Product</h3>
+
+        <form onSubmit={this.handleSubmit}>
+          <input
+            placeholder='Description'
+            name='description'
+            value={this.state.description}
+            onChange={this.handleChange}
+          />
+          <input
+            placeholder='Price'
+            name='price'
+            type='number'
+            value={this.state.price}
+            onChange={this.handleChange}
+          />
+          <input
+            placeholder='Inventory'
+            name='inventory'
+            type='number'
+            value={this.state.inventory}
+            onChange={this.handleChange}
+          />
+
+          <input type='submit' />
+        </form>
       </div>
     );
   }
@@ -93,6 +174,7 @@ class ProductList extends Component {
           price={product.price}
           inventory={product.inventory}
           onAddToCart={this.props.onAddToCart}
+          onSubmit={this.props.onSubmit}
         />
       );
     });
@@ -109,6 +191,18 @@ class ProductList extends Component {
 }
 
 class Product extends Component {
+  state = {
+    openForm: false
+  }
+
+  handleClick = (e) => {
+    this.setState({ openForm: true });
+  }
+
+  closeEditForm = () => {
+    this.setState({ openForm: false });
+  }
+
   render() {
     return (
       <li>
@@ -122,8 +216,77 @@ class Product extends Component {
           id={this.props.id}
           disabled={this.props.inventory > 0 ? false : true }
         />
+        <EditForm
+          openForm={this.state.openForm}
+          id={this.props.id}
+          description={this.props.description}
+          price={this.props.price}
+          inventory={this.props.inventory}
+          onClick={this.handleClick}
+          onSubmit={this.props.onSubmit}
+          closeForm={this.closeEditForm}
+        />
       </li>
     );
+  }
+}
+
+class EditForm extends Component {
+  state = {
+    id: this.props.id,
+    description: this.props.description,
+    price: this.props.price,
+    inventory: this.props.inventory
+  }
+
+  handleSubmit = (e) => {
+    e.preventDefault();
+
+    this.props.closeForm();
+    this.props.onSubmit(this.state);
+  }
+
+  handleChange = (e) => {
+    let newState = {};
+    newState[e.target.name] = e.target.value;
+    this.setState(newState);
+  }
+
+  render() {
+    if (this.props.openForm) {
+      return (
+        <form onSubmit={this.handleSubmit}>
+          <input
+            placeholder='Description'
+            name='description'
+            value={this.state.description}
+            onChange={this.handleChange}
+          />
+          <input
+            placeholder='Price'
+            name='price'
+            type='number'
+            value={this.state.price}
+            onChange={this.handleChange}
+          />
+          <input
+            placeholder='Inventory'
+            name='inventory'
+            type='number'
+            value={this.state.inventory}
+            onChange={this.handleChange}
+          />
+
+          <input type='submit' />
+        </form>
+      );
+    } else {
+      return (
+        <button onClick={this.props.onClick}>Edit Product</button>
+      );
+    }
+
+
   }
 }
 
