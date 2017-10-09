@@ -6,6 +6,7 @@ import { configure } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 
 configure({ adapter: new Adapter() });
+
 const state = {
   products: [
     {"id": 1, "description": "iPad 4 Mini", "price": 500.01, "inventory": 2},
@@ -17,8 +18,7 @@ const state = {
   lastId: 3,
 };
 
-
-describe('App', () => {
+describe('Shopping Cart', () => {
   let wrapper;
 
   beforeEach(() => {
@@ -50,6 +50,31 @@ describe('EditForm', () => {
 
   it('displays form when openForm prop is true', () => {
     const wrapper = shallow(<App.EditForm openForm={true}/>);
-    expect(wrapper.containsMatchingElement(<form></form>)).toBe(true);
+    expect(wrapper.containsMatchingElement(<form><input/><input/><input/><input/></form>)).toBe(true);
   });
 });
+
+describe('ProductDescription', () => {
+  let firstProduct = state.products[0]
+
+  it('displays product details', () => {
+    const wrapper = shallow(<App.ProductDescription
+                              description={firstProduct.description}
+                              price={firstProduct.price}
+                              inventory={firstProduct.inventory} />);
+
+    expect(wrapper.contains("iPad 4 Mini")).toBe(true);
+    expect(wrapper.contains(500.01)).toBe(true);
+    expect(wrapper.contains(2)).toBe(true);
+  });
+});
+
+describe('AddToCart', () => {
+  it('adds a new cart item to the cart', () => {
+    const wrapper = shallow(<App.AddToCart id={1}/>);
+    const button = wrapper.find('button').first();
+    button.simulate('click');
+
+    expect(wrapper.state().cartItems.length).toBe(1);
+  });
+})
