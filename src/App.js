@@ -393,4 +393,7 @@ class Checkout extends Component {
   }
 }
 
-export default ShoppingCart;
+export {
+  ShoppingCart,
+  ProductList
+}

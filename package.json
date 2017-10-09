@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
-    "enzyme": "2.8.2",
+    "enzyme": "3.1.0",
     "react-scripts": "0.9.5",
-    "react-test-renderer": "15.5.4"
+    "react-test-renderer": "16.0.0",
+    "enzyme-adapter-react-16": "1.0.1"
   },
   "dependencies": {
     "react": "^16.0.0",
