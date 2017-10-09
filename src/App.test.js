@@ -70,11 +70,64 @@ describe('ProductDescription', () => {
 });
 
 describe('AddToCart', () => {
-  it('adds a new cart item to the cart', () => {
+  it('displays a button', () => {
+    const wrapper = shallow(<App.AddToCart />);
+    expect(wrapper.containsMatchingElement(<button>Add to cart</button>)).toBe(true);
+  });
+
+  it('disables button when inventory is 0', () => {
+    const wrapper = shallow(<App.AddToCart disabled={true} />);
+    expect(wrapper.find('button').first().props().disabled).toBe(true);
+  });
+/*  it('adds a new cart item to the cart', () => {
     const wrapper = shallow(<App.AddToCart id={1}/>);
     const button = wrapper.find('button').first();
     button.simulate('click');
 
     expect(wrapper.state().cartItems.length).toBe(1);
   });
-})
+*/
+});
+
+describe('AddNewItemForm', () => {
+  let wrapper;
+  it('displays a form', () => {
+    wrapper = shallow(<App.AddNewItemForm />);
+    expect(wrapper.containsMatchingElement(<form><input /><input /><input /><input /></form>)).toBe(true);
+  });
+
+  describe('and then submits the form', () => {
+    let submitWrapper;
+    let form;
+    beforeEach(() => {
+      submitWrapper = shallow(<App.AddNewItemForm onSubmit={() => {}} />);
+      form = submitWrapper.find('form').first();
+      form.simulate('submit', { preventDefault: () => {} })
+    });
+
+    it('clears the form', () => {
+      const input = form.find('input').first();
+      expect(input.value).toEqual('');
+    });
+  })
+
+  
+});
+
+describe('Cart', () => {
+  it('has a title', () => {
+    const wrapper = shallow(<App.Cart />);
+    expect(wrapper.contains(<h2>Your Cart</h2>)).toBe(true);
+  })
+});
+
+describe('CartList', () => {
+  it('displays a message if the cart is empty', () => {
+    const wrapper = shallow(<App.CartList cartItems={[]}/>);
+    expect(wrapper.contains(<em>Please add some items to cart.</em>)).toBe(true);
+  });
+  it('displays list instead of message if something is in cart', () => {
+    const wrapper = shallow(<App.CartList cartItems={[{"id": 1, "description": "iPad 4 Mini", "price": 500.01, "inventory": 2}]} />);
+    expect(wrapper.contains(<em>Please add some items to cart.</em>)).toBe(false);
+  })
+});
