@@ -111,7 +111,7 @@ describe('AddNewItemForm', () => {
     });
   })
 
-  
+
 });
 
 describe('Cart', () => {
@@ -130,4 +130,11 @@ describe('CartList', () => {
     const wrapper = shallow(<App.CartList cartItems={[{"id": 1, "description": "iPad 4 Mini", "price": 500.01, "inventory": 2}]} />);
     expect(wrapper.contains(<em>Please add some items to cart.</em>)).toBe(false);
   })
+});
+
+describe('Checkout', () => {
+  it('is disabled when total cost is zero', () => {
+    const wrapper = shallow(<App.Checkout disabled={true}/>);
+    expect(wrapper.containsMatchingElement(<button disabled='true'></button>)).toBe(true);
+  });
 });
