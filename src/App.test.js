@@ -107,7 +107,7 @@ describe('AddNewItemForm', () => {
 
     it('clears the form', () => {
       const input = form.find('input').first();
-      expect(input.value).toEqual('');
+      expect(submitWrapper.state().description).toEqual('');
     });
   })
 
