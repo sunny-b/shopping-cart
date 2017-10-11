@@ -79,14 +79,6 @@ describe('AddToCart', () => {
     const wrapper = shallow(<App.AddToCart disabled={true} />);
     expect(wrapper.find('button').first().props().disabled).toBe(true);
   });
-/*  it('adds a new cart item to the cart', () => {
-    const wrapper = shallow(<App.AddToCart id={1}/>);
-    const button = wrapper.find('button').first();
-    button.simulate('click');
-
-    expect(wrapper.state().cartItems.length).toBe(1);
-  });
-*/
 });
 
 describe('AddNewItemForm', () => {
@@ -110,8 +102,6 @@ describe('AddNewItemForm', () => {
       expect(submitWrapper.state().description).toEqual('');
     });
   })
-
-
 });
 
 describe('Cart', () => {
@@ -135,6 +125,14 @@ describe('CartList', () => {
 describe('Checkout', () => {
   it('is disabled when total cost is zero', () => {
     const wrapper = shallow(<App.Checkout disabled={true}/>);
-    expect(wrapper.containsMatchingElement(<button disabled='true'></button>)).toBe(true);
+    expect(wrapper.containsMatchingElement(<button disabled={true}>Checkout</button>)).toBe(true);
+  });
+
+  it('calls handleSubmit method when clicked', () => {
+    const handleSubmit = jest.fn();
+    const wrapper = shallow(<App.Checkout disabled={false} onCheckout={handleSubmit} />);
+    const button = wrapper.find('button').first();
+    button.simulate('click');
+    expect(handleSubmit).toHaveBeenCalled();
   });
 });
