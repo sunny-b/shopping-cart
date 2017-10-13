@@ -35,8 +35,8 @@ function productsReducer(state = initialProducts, action) {
       ],
     };
   } else if (action.type === 'UPDATE_PRODUCT') {
-    const products = state.products.filter(item => 
-      item.id !== product.id).concat(product).sort((a, b) => a.id - b.id);
+    const products = state.products.filter(item =>
+      item.id !== action.product.id).concat(action.product).sort((a, b) => a.id - b.id);
     return {
       ...state,
       products
@@ -83,97 +83,18 @@ const reducer = combineReducers({
 const store = createStore(reducer);
 
 class ShoppingCart extends Component {
-  componentDidMount() => {
+  componentDidMount = () => {
     store.subscribe(() => this.forceUpdate());
-  }
-
-  handleAddToCart = (productId) => {
-    const product = this.state.products.filter(product => product.id === productId)[0];
-
-    this.setState(prevState => {
-      return {
-        products: this.decreaseInventory(productId),
-        totalCost: prevState.totalCost + product.price,
-        cartItems: this.addItemToCart(product),
-      }
-    });
-  }
-
-  handleNewProduct = (product) => {
-    product.price = +product.price;
-    product.inventory = +product.inventory;
-    product.id = this.state.lastId + 1;
-    const products = [...this.state.products, product];
-
-    this.setState({ products, lastId: product.id });
-  }
-
-  decreaseInventory = (productId) => {
-    return this.state.products.map(product => {
-      if (product.id === productId) {
-        return Object.assign({}, product, {
-          inventory: product.inventory - 1,
-        });
-      } else {
-        return product;
-      }
-    });
-  }
-
-  addItemToCart = (product) => {
-    const filteredItems = this.state.cartItems.filter(cartItem => {
-      return cartItem.id === product.id
-    });
-
-    if (filteredItems.length > 0) {
-      return this.state.cartItems;
-    } else {
-      return this.state.cartItems.concat(product);
-    }
-  }
-
-  handleCheckout = () => {
-    this.emptyCart();
-  }
-
-
-
-  emptyCart = () => {
-    this.setState(prevState => {
-      return {
-        products: prevState.products,
-        totalCost: 0,
-        cartItems: [],
-      }
-    })
-  }
-
-  handleEditProduct = (product) => {
-    product.price = +product.price;
-    product.inventory = +product.inventory;
-
-    const products = this.state.products.filter(item => item.id !== product.id).concat(product).sort((a, b) => a.id - b.id);
-    this.setState({ products });
   }
 
   render() {
     return (
       <div>
         <h1>Shopping Cart Example</h1>
-        <AddNewItemForm
-          onSubmit={this.handleNewProduct}
-        />
+        <AddNewItemForm />
         <hr />
-        <ProductList
-          products={this.state.products}
-          onAddToCart={this.handleAddToCart}
-          onSubmit={this.handleEditProduct}
-        />
-        <Cart
-          totalCost={this.state.totalCost}
-          cartItems={this.state.cartItems}
-          onCheckout={this.handleCheckout}
-        />
+        <ProductList />
+        <Cart />
       </div>
     );
   }
@@ -195,7 +116,14 @@ class AddNewItemForm extends Component {
   handleSubmit = (e) => {
     e.preventDefault();
 
-    this.props.onSubmit(this.state);
+    store.dispatch({
+      type: 'ADD_PRODUCT',
+      product: {
+        description: this.state.description,
+        price: +this.state.price,
+        inventory: +this.state.inventory,
+      }
+    });
 
     this.setState({
       description: '',
@@ -240,7 +168,8 @@ class AddNewItemForm extends Component {
 
 class ProductList extends Component {
   render() {
-    const productComponents = this.props.products.map(product => {
+    const state = store.getState();
+    const productComponents = state.products.products.map(product => {
       return (
         <Product
           key={'product-' + product.id}
@@ -248,8 +177,6 @@ class ProductList extends Component {
           description={product.description}
           price={product.price}
           inventory={product.inventory}
-          onAddToCart={this.props.onAddToCart}
-          onSubmit={this.props.onSubmit}
         />
       );
     });
@@ -297,7 +224,6 @@ class Product extends Component {
           price={this.props.price}
           inventory={this.props.inventory}
           onClick={this.handleClick}
-          onSubmit={this.props.onSubmit}
           closeForm={this.closeEditForm}
         />
       </li>
@@ -317,7 +243,15 @@ class EditForm extends Component {
     e.preventDefault();
 
     this.props.closeForm();
-    this.props.onSubmit(this.state);
+    store.dispatch({
+      type: 'UPDATE_PRODUCT',
+      product: {
+        id: +this.state.id,
+        description: this.state.description,
+        price: +this.state.price,
+        inventory: +this.state.inventory,
+      },
+    });
   }
 
   handleChange = (e) => {
@@ -359,40 +293,35 @@ class EditForm extends Component {
         <button onClick={this.props.onClick}>Edit Product</button>
       );
     }
-
-
   }
 }
 
-class ProductDescription extends Component {
-  render() {
-    if (this.props.inventory) {
-      return (
-        <p>
-          <span>{this.props.description}</span>
-          <span> - ${this.props.price}</span>
-          <span> x {this.props.inventory}</span>
-        </p>
-      )
-    } else {
-      return (
-        <p>
-          <span>{this.props.description}</span>
-          <span> - ${this.props.price}</span>
-        </p>
-      )
-    }
+const ProductDescription = (props) => {
+  if (props.inventory) {
+    return (
+      <p>
+        <span>{props.description}</span>
+        <span> - ${props.price}</span>
+        <span> x {props.inventory}</span>
+      </p>
+    );
+  } else {
+    return (
+      <p>
+        <span>{props.description}</span>
+        <span> - ${props.price}</span>
+      </p>
+    );
   }
-}
+};
 
 class AddToCart extends Component {
-
-
   handleAddToCart = () => {
+    const state = store.getState();
     store.dispatch({
       type: 'ADD_ITEM_TO_CART',
       product: state.products.products.filter(p => p.id === this.props.id)[0]
-    }));
+    });
   }
 
   render() {
@@ -415,6 +344,7 @@ class AddToCart extends Component {
 
 class Cart extends Component {
   render() {
+    const state = store.getState();
     return (
       <div>
         <h2>Your Cart</h2>
@@ -430,6 +360,8 @@ class Cart extends Component {
 
 class CartList extends Component {
   render() {
+    const state = store.getState();
+
     if (state.cartItems.length === 0) {
       return (
         <em>Please add some items to cart.</em>
@@ -458,6 +390,7 @@ class Checkout extends Component {
   }
 
   render() {
+    const state = store.getState();
     return (
       <button
         disabled={state.totalCost === 0 ? true : false}
