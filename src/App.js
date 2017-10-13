@@ -4,13 +4,6 @@ import { Provider, connect } from 'react-redux';
 import logo from './logo.svg';
 import './App.css';
 
-const reducer = combineReducers({
-  products: productsReducer,
-  totalCost: totalCostReducer,
-  cartItems: cartItemsReducer,
-  lastId: lastIdReducer,
-});
-
 const initialProducts = {
   products: [
     {"id": 1, "description": "iPad 4 Mini", "price": 500.01, "inventory": 2},
@@ -20,32 +13,34 @@ const initialProducts = {
   lastId: 3,
 };
 
-handleNewProduct = (product) => {
-  product.price = +product.price;
-  product.inventory = +product.inventory;
-  product.id = this.state.lastId + 1;
-  const products = [...this.state.products, product];
-
-  this.setState({ products, lastId: product.id });
-}
-
 function productsReducer(state = initialProducts, action) {
   if (action.type === 'ADD_PRODUCT') {
-    const newProduct = {...action.newProduct, id: lastIdReducer(state, action)}
-    const products = [...state, action.newProduct];
+    const newProduct = {...action.newProduct, id: state.lastId + 1};
 
+    return {
+      products: [...state.products, action.newProduct],
+      lastId: newProduct.id,
+    };
   } else if (action.type === 'ADD_ITEM_TO_CART') {
-    const productIdx = state.findIndex(p => p.id === action.product.id);
-    const product = state[productIdx];
+    const productIdx = state.products.findIndex(p => p.id === action.product.id);
+    const product = state.products[productIdx];
     const newProduct = {...product, inventory: product.inventory - 1};
 
-    return [
-      ...state.slice(0, productIdx),
+    return {
+      ...state,
+      products: [
+      ...state.products.slice(0, productIdx),
       newProduct,
-      ...state.slice(productIdx + 1),
-    ];
+      ...state.products.slice(productIdx + 1),
+      ],
+    };
   } else if (action.type === 'UPDATE_PRODUCT') {
-
+    const products = state.products.filter(item => 
+      item.id !== product.id).concat(product).sort((a, b) => a.id - b.id);
+    return {
+      ...state,
+      products
+    }
   } else {
     return state;
   }
@@ -79,27 +74,18 @@ function cartItemsReducer(state = [], action) {
   }
 }
 
-function lastIdReducer(state = initialProducts.length, action) {
-  if (action.type === 'ADD_PRODUCT') {
-
-  } else {
-    return state;
-  }
-}
+const reducer = combineReducers({
+  products: productsReducer,
+  totalCost: totalCostReducer,
+  cartItems: cartItemsReducer,
+});
 
 const store = createStore(reducer);
 
 class ShoppingCart extends Component {
-  state = {
-    products: [
-      {"id": 1, "description": "iPad 4 Mini", "price": 500.01, "inventory": 2},
-      {"id": 2, "description": "H&M T-Shirt White", "price": 10.99, "inventory": 10},
-      {"id": 3, "description": "Charli XCX - Sucker CD", "price": 19.99, "inventory": 5}
-    ],
-    totalCost: 0,
-    cartItems: [],
-    lastId: 3,
-  };
+  componentDidMount() => {
+    store.subscribe(() => this.forceUpdate());
+  }
 
   handleAddToCart = (productId) => {
     const product = this.state.products.filter(product => product.id === productId)[0];
@@ -149,6 +135,8 @@ class ShoppingCart extends Component {
   handleCheckout = () => {
     this.emptyCart();
   }
+
+
 
   emptyCart = () => {
     this.setState(prevState => {
@@ -299,7 +287,6 @@ class Product extends Component {
           inventory={this.props.inventory}
         />
         <AddToCart
-          onAddToCart={this.props.onAddToCart}
           id={this.props.id}
           disabled={this.props.inventory > 0 ? false : true }
         />
@@ -399,8 +386,13 @@ class ProductDescription extends Component {
 }
 
 class AddToCart extends Component {
+
+
   handleAddToCart = () => {
-    this.props.onAddToCart(this.props.id);
+    store.dispatch({
+      type: 'ADD_ITEM_TO_CART',
+      product: state.products.products.filter(p => p.id === this.props.id)[0]
+    }));
   }
 
   render() {
@@ -426,16 +418,11 @@ class Cart extends Component {
     return (
       <div>
         <h2>Your Cart</h2>
-          <CartList
-            cartItems={this.props.cartItems}
-          />
+          <CartList />
           <p>
-            Total: $<span>{this.props.totalCost}</span>
+            Total: $<span>{state.totalCost}</span>
           </p>
-          <Checkout
-            disabled={this.props.totalCost === 0 ? true : false}
-            onCheckout={this.props.onCheckout}
-          />
+          <Checkout />
       </div>
     );
   }
@@ -443,12 +430,12 @@ class Cart extends Component {
 
 class CartList extends Component {
   render() {
-    if (this.props.cartItems.length === 0) {
+    if (state.cartItems.length === 0) {
       return (
         <em>Please add some items to cart.</em>
       );
     } else {
-      const components = this.props.cartItems.map((product) => (
+      const components = state.cartItems.map((product) => (
         <ProductDescription
           key={'product-' + product.id}
           id={product.id}
@@ -467,28 +454,25 @@ class CartList extends Component {
 
 class Checkout extends Component {
   handleCheckout = () => {
-    this.props.onCheckout()
+    store.dispatch({ type: 'CHECKOUT' });
   }
 
   render() {
     return (
       <button
-        disabled={this.props.disabled}
+        disabled={state.totalCost === 0 ? true : false}
         onClick={this.handleCheckout}
-      >Checkout</button>
+      >
+        Checkout
+      </button>
     )
   }
 }
 
-export {
-  ShoppingCart,
-  ProductList,
-  AddNewItemForm,
-  AddToCart,
-  Product,
-  EditForm,
-  ProductDescription,
-  Cart,
-  CartList,
-  Checkout
-}
+const WrappedShoppingCart = () => (
+  <Provider store={store}>
+    <ShoppingCart />
+  </Provider>
+);
+
+export default WrappedShoppingCart;

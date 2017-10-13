@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import { ShoppingCart } from './App';
+import WrappedShoppingCart from './App';
 import registerServiceWorker from './registerServiceWorker';
 
-ReactDOM.render(<ShoppingCart />, document.getElementById('root'));
+ReactDOM.render(<WrappedShoppingCart />, document.getElementById('root'));
 registerServiceWorker();
