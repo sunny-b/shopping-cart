@@ -1,6 +1,93 @@
 import React, { Component } from 'react';
+import { createStore, combineReducers } from 'redux';
+import { Provider, connect } from 'react-redux';
 import logo from './logo.svg';
 import './App.css';
+
+const reducer = combineReducers({
+  products: productsReducer,
+  totalCost: totalCostReducer,
+  cartItems: cartItemsReducer,
+  lastId: lastIdReducer,
+});
+
+const initialProducts = {
+  products: [
+    {"id": 1, "description": "iPad 4 Mini", "price": 500.01, "inventory": 2},
+    {"id": 2, "description": "H&M T-Shirt White", "price": 10.99, "inventory": 10},
+    {"id": 3, "description": "Charli XCX - Sucker CD", "price": 19.99, "inventory": 5}
+  ],
+  lastId: 3,
+};
+
+handleNewProduct = (product) => {
+  product.price = +product.price;
+  product.inventory = +product.inventory;
+  product.id = this.state.lastId + 1;
+  const products = [...this.state.products, product];
+
+  this.setState({ products, lastId: product.id });
+}
+
+function productsReducer(state = initialProducts, action) {
+  if (action.type === 'ADD_PRODUCT') {
+    const newProduct = {...action.newProduct, id: lastIdReducer(state, action)}
+    const products = [...state, action.newProduct];
+
+  } else if (action.type === 'ADD_ITEM_TO_CART') {
+    const productIdx = state.findIndex(p => p.id === action.product.id);
+    const product = state[productIdx];
+    const newProduct = {...product, inventory: product.inventory - 1};
+
+    return [
+      ...state.slice(0, productIdx),
+      newProduct,
+      ...state.slice(productIdx + 1),
+    ];
+  } else if (action.type === 'UPDATE_PRODUCT') {
+
+  } else {
+    return state;
+  }
+}
+
+function totalCostReducer(state = 0, action) {
+  if (action.type === 'ADD_ITEM_TO_CART') {
+    return state + action.product.price;
+  } else if (action.type === 'CHECKOUT') {
+    return 0;
+  } else {
+    return state;
+  }
+}
+
+function cartItemsReducer(state = [], action) {
+  if (action.type === 'ADD_ITEM_TO_CART') {
+    const filteredItems = state.filter(cartItem => {
+      return cartItem.id === action.product.id
+    });
+
+    if (filteredItems.length > 0) {
+      return state;
+    } else {
+      return state.concat(action.product);
+    }
+  } else if (action.type === 'CHECKOUT') {
+    return [];
+  } else {
+    return state;
+  }
+}
+
+function lastIdReducer(state = initialProducts.length, action) {
+  if (action.type === 'ADD_PRODUCT') {
+
+  } else {
+    return state;
+  }
+}
+
+const store = createStore(reducer);
 
 class ShoppingCart extends Component {
   state = {
