@@ -36,7 +36,7 @@ function productsReducer(state = initialProducts, action) {
     };
   } else if (action.type === 'UPDATE_PRODUCT') {
     const products = state.products.filter(item =>
-      item.id !== action.product.id).concat(action.product).sort((a, b) => a.id - b.id);
+      item.id !== action.product.id).concat(action.product).sort((a, b) => b.id - a.id);
     return {
       ...state,
       products
