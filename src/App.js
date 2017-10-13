@@ -118,7 +118,7 @@ class AddNewItemForm extends Component {
 
     store.dispatch({
       type: 'ADD_PRODUCT',
-      product: {
+      newProduct: {
         description: this.state.description,
         price: +this.state.price,
         inventory: +this.state.inventory,
@@ -169,6 +169,7 @@ class AddNewItemForm extends Component {
 class ProductList extends Component {
   render() {
     const state = store.getState();
+    console.log(state);
     const productComponents = state.products.products.map(product => {
       return (
         <Product
